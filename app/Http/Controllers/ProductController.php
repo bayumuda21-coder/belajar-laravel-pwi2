@@ -7,14 +7,13 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-public function index()
-{
-    $products = Product::all();
+    public function index()
+    {
+        $products = Product::all();
+        return view('products.index', compact('products'));
+    }
 
-    return view('products.index', compact('products'));
-}
-
-    public function create()
+    public function addProduct()
     {
         return view('products.create');
     }
@@ -22,46 +21,59 @@ public function index()
     public function store(Request $request)
     {
         $request->validate([
-            'nama_produk' => 'required|string|max:255',
-            'stok' => 'required|integer|min:0',
-            'harga' => 'required|numeric|min:0',
+            'nama_produk' => 'required|min:4|max:20',
+            'stok'        => 'required|integer|min:0',
+            'harga'       => 'required|integer|min:0',
+            'deskripsi'   => 'required',
         ]);
 
-        Product::create($request->only([
-            'nama_produk',
-            'stok',
-            'harga',
-        ]));
+        Product::create([
+            'nama_produk' => $request->nama_produk,
+            'stok'        => $request->stok,
+            'harga'       => $request->harga,
+            'deskripsi'   => $request->deskripsi,
+        ]);
 
-        return redirect()->route('products.index');
+        return redirect('/product')->with('success', 'Data Berhasil Ditambahkan');
     }
 
-    public function edit(Product $product)
+    public function show($id)
     {
+        $product = Product::findOrFail($id);
+        return view('products.detail', compact('product'));
+    }
+
+    public function edit($id)
+    {
+        $product = Product::findOrFail($id);
         return view('products.edit', compact('product'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update($id, Request $request)
     {
         $request->validate([
-            'nama_produk' => 'required|string|max:255',
-            'stok' => 'required|integer|min:0',
-            'harga' => 'required|numeric|min:0',
+            'nama_produk' => 'required|min:4|max:20',
+            'stok'        => 'required|integer|min:0',
+            'harga'       => 'required|integer|min:0',
+            'deskripsi'   => 'required',
         ]);
 
-        $product->update($request->only([
-            'nama_produk',
-            'stok',
-            'harga',
-        ]));
+        $product = Product::findOrFail($id);
+        $product->update([
+            'nama_produk' => $request->nama_produk,
+            'stok'        => $request->stok,
+            'harga'       => $request->harga,
+            'deskripsi'   => $request->deskripsi,
+        ]);
 
-        return redirect()->route('products.index');
+        return redirect('/product')->with('success', 'Data Berhasil Diupdate');
     }
 
-    public function destroy(Product $product)
+    public function destroy($id)
     {
+        $product = Product::findOrFail($id);
         $product->delete();
 
-        return redirect()->route('products.index');
+        return redirect('/product')->with('success', 'Data Berhasil Dihapus');
     }
 }
